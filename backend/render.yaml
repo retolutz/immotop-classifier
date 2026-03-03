@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: immotop-classifier-api
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind=0.0.0.0:$PORT --workers=1 --timeout=120 application:application -k uvicorn.workers.UvicornWorker
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: IMMOTOP_MOCK_MODE
+        value: "true"
+      - key: DEBUG
+        value: "false"
+      - key: CORS_ORIGINS
+        value: '["https://gray-meadow-0773d4703.4.azurestaticapps.net","http://localhost:3000"]'
+      - key: ANTHROPIC_API_KEY
+        sync: false

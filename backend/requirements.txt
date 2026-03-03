@@ -1,0 +1,28 @@
+# Backend Dependencies
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+python-multipart==0.0.9
+pydantic==2.6.1
+pydantic-settings==2.2.1
+
+# LLM
+anthropic==0.18.1
+
+# PDF Processing (no system dependencies)
+PyPDF2==3.0.1
+
+# OCR (optional - requires local tesseract)
+# pdf2image==1.17.0
+# pytesseract==0.3.10
+# Pillow==10.2.0
+
+# HTTP Client
+httpx==0.27.0
+
+# Database (für Logging/Feedback)
+sqlalchemy==2.0.25
+aiosqlite==0.19.0
+
+# Utils
+python-dotenv==1.0.1
+gunicorn==21.2.0
