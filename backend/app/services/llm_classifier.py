@@ -59,7 +59,9 @@ Antworte IMMER im folgenden JSON-Format:
     ],
     "extrahierte_daten": {
         "kreditor_name": "<string oder null>",
-        "leistungsbeschreibung": "<string>",
+        "leistungsbeschreibung": "<kurze Beschreibung für Buchungstext>",
+        "rechnungsdatum": "<YYYY-MM-DD oder null>",
+        "bruttobetrag": <float oder null>,
         "zeitraum": "<string oder null>"
     }
 }"""

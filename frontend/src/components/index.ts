@@ -3,3 +3,4 @@ export { ConfidenceIndicator } from "./ConfidenceIndicator";
 export { InvoicePreview } from "./InvoicePreview";
 export { AccountSelector } from "./AccountSelector";
 export { SubmitForm } from "./SubmitForm";
+export { KontenplanView } from "./KontenplanView";

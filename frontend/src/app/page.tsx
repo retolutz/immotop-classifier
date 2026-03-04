@@ -8,6 +8,7 @@ import {
   InvoicePreview,
   AccountSelector,
   SubmitForm,
+  KontenplanView,
 } from "@/components";
 import { RefreshCw, AlertCircle } from "lucide-react";
 
@@ -105,6 +106,13 @@ export default function Home() {
               <li>Mit einem Klick an Immotop2 senden</li>
             </ol>
           </div>
+
+          {/* Kontenplan */}
+          {konten.length > 0 && (
+            <div className="mt-6">
+              <KontenplanView konten={konten} />
+            </div>
+          )}
         </div>
       )}
 
@@ -148,6 +156,7 @@ export default function Home() {
                 <SubmitForm
                   invoiceId={uploadResult.id}
                   invoiceData={uploadResult.invoice_data}
+                  classification={uploadResult.classification}
                   selectedKonto={selectedKonto}
                   kreditoren={kreditoren}
                 />

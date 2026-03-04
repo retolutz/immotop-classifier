@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type {
   InvoiceData,
+  ClassificationResult,
   Konto,
   Kreditor,
   ImmotopSubmitRequest,
@@ -20,22 +21,95 @@ import {
 interface SubmitFormProps {
   invoiceId: string;
   invoiceData: InvoiceData;
+  classification: ClassificationResult;
   selectedKonto: Konto;
   kreditoren: Kreditor[];
+}
+
+// Hilfsfunktion für Kreditor-Matching
+function findMatchingKreditor(
+  kreditorName: string | null | undefined,
+  kreditoren: Kreditor[]
+): Kreditor | null {
+  if (!kreditorName || kreditoren.length === 0) return null;
+
+  const searchName = kreditorName.toLowerCase().trim();
+
+  // Exakter Match
+  let match = kreditoren.find(
+    (k) => k.bez.toLowerCase() === searchName || k.name.toLowerCase() === searchName
+  );
+  if (match) return match;
+
+  // Partieller Match (Kreditor enthält Suchbegriff oder umgekehrt)
+  match = kreditoren.find(
+    (k) =>
+      k.bez.toLowerCase().includes(searchName) ||
+      searchName.includes(k.bez.toLowerCase()) ||
+      k.name.toLowerCase().includes(searchName) ||
+      searchName.includes(k.name.toLowerCase())
+  );
+  if (match) return match;
+
+  // Wort-Match (erstes Wort)
+  const firstWord = searchName.split(/\s+/)[0];
+  if (firstWord.length >= 3) {
+    match = kreditoren.find(
+      (k) =>
+        k.bez.toLowerCase().includes(firstWord) ||
+        k.name.toLowerCase().includes(firstWord)
+    );
+  }
+
+  return match || null;
 }
 
 export function SubmitForm({
   invoiceId,
   invoiceData,
+  classification,
   selectedKonto,
   kreditoren,
 }: SubmitFormProps) {
+  const extrahierteDaten = classification.extrahierte_daten || {};
+
+  // Auto-Match Kreditor
+  const suggestedKreditor = useMemo(
+    () => findMatchingKreditor(extrahierteDaten.kreditor_name, kreditoren),
+    [extrahierteDaten.kreditor_name, kreditoren]
+  );
+
   const [selectedKreditor, setSelectedKreditor] = useState<Kreditor | null>(
-    null
+    suggestedKreditor
   );
-  const [buchungstext, setBuchungstext] = useState(
-    invoiceData.beschreibung || ""
-  );
+
+  // Buchungstext aus LLM-Extraktion oder Fallback
+  const initialBuchungstext = useMemo(() => {
+    if (extrahierteDaten.leistungsbeschreibung) {
+      return extrahierteDaten.leistungsbeschreibung;
+    }
+    if (invoiceData.beschreibung) {
+      return invoiceData.beschreibung;
+    }
+    // Fallback: Kreditor + Konto
+    const parts = [];
+    if (extrahierteDaten.kreditor_name) {
+      parts.push(extrahierteDaten.kreditor_name);
+    }
+    if (selectedKonto?.bez) {
+      parts.push(selectedKonto.bez);
+    }
+    return parts.join(" - ") || "";
+  }, [extrahierteDaten, invoiceData.beschreibung, selectedKonto]);
+
+  const [buchungstext, setBuchungstext] = useState(initialBuchungstext);
+
+  // Update wenn sich suggestedKreditor ändert
+  useEffect(() => {
+    if (suggestedKreditor && !selectedKreditor) {
+      setSelectedKreditor(suggestedKreditor);
+    }
+  }, [suggestedKreditor, selectedKreditor]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ImmotopSubmitResponse | null>(null);
 
@@ -49,12 +123,17 @@ export function SubmitForm({
     setResult(null);
 
     try {
+      // Datum: OCR -> LLM -> Heute
+      const belegdatum =
+        invoiceData.rechnungsdatum ||
+        extrahierteDaten.rechnungsdatum ||
+        new Date().toISOString().split("T")[0];
+
       const request: ImmotopSubmitRequest = {
         invoice_id: invoiceId,
         mandant_seqnr: 1,
         kreditor_seqnr: selectedKreditor.s_seqnr,
-        belegdatum:
-          invoiceData.rechnungsdatum || new Date().toISOString().split("T")[0],
+        belegdatum,
         faelligkeitsdatum: invoiceData.faelligkeitsdatum,
         bruttobetrag: invoiceData.bruttobetrag || 0,
         buchungstext: buchungstext || "Rechnung",
@@ -153,7 +232,17 @@ export function SubmitForm({
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Kreditor
+          {suggestedKreditor && (
+            <span className="ml-2 text-xs text-green-600 font-normal">
+              (automatisch erkannt)
+            </span>
+          )}
         </label>
+        {extrahierteDaten.kreditor_name && !suggestedKreditor && (
+          <p className="text-xs text-amber-600 mb-1">
+            Erkannt: &quot;{extrahierteDaten.kreditor_name}&quot; - kein passender Kreditor gefunden
+          </p>
+        )}
         <select
           value={selectedKreditor?.s_seqnr || ""}
           onChange={(e) => {
@@ -200,7 +289,12 @@ export function SubmitForm({
         </div>
         <div className="flex justify-between mt-1">
           <span className="text-gray-500">Datum:</span>
-          <span>{invoiceData.rechnungsdatum || "Heute"}</span>
+          <span>
+            {invoiceData.rechnungsdatum || extrahierteDaten.rechnungsdatum || "Heute"}
+            {!invoiceData.rechnungsdatum && extrahierteDaten.rechnungsdatum && (
+              <span className="ml-1 text-xs text-green-600">(KI)</span>
+            )}
+          </span>
         </div>
       </div>
 
