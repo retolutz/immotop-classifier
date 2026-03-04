@@ -52,17 +52,20 @@ class InvoiceUploadResponse(BaseModel):
 
 
 class BelegPosten(BaseModel):
-    """Einzelne Buchungsposition"""
+    """Einzelne Buchungsposition gemäss Immotop2 DMS-Schnittstelle"""
 
     konto_seqnr: int
     kostenstelle_seqnr: Optional[int] = None
-    bruttobetrag: Decimal
+    bruttobetrag: Decimal  # betragbrutto
+    betrag_exkl_mwst: Optional[Decimal] = None  # betragexklmwst
+    betrag_mwst: Optional[Decimal] = None  # betragmwstvoll
+    mwst_satz: Optional[float] = None  # mwstsatz (z.B. 7.7)
+    mwst_code_seqnr: Optional[int] = None  # mwstcode_seqnr
     buchungstext: str
-    mwst_code: Optional[str] = None
 
 
 class ImmotopSubmitRequest(BaseModel):
-    """Request zum Senden an Immotop2"""
+    """Request zum Senden an Immotop2 gemäss DMS-Schnittstelle"""
 
     invoice_id: str
     mandant_seqnr: int
@@ -73,6 +76,11 @@ class ImmotopSubmitRequest(BaseModel):
     bruttobetrag: Decimal
     buchungstext: str
     positionen: list[BelegPosten]
+    # Zusätzliche Felder gemäss DmsBeleg
+    rechnungsnummer: Optional[str] = None  # rechnungnummer
+    esrreferenznummer: Optional[str] = None  # QR-Referenz
+    qrcodepayload: Optional[str] = None  # Ganzer QR-Code Inhalt
+    kreditor_iban: Optional[str] = None  # kreditorzahlstellekontodetail
 
 
 class ImmotopSubmitResponse(BaseModel):

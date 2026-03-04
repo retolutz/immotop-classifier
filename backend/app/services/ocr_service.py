@@ -283,22 +283,37 @@ class OCRService:
         return None
 
     def _extract_mwst(self, text: str) -> Optional[dict]:
-        """Extrahiert MWST-Informationen"""
-        satz_pattern = r"(?:MWST|MwSt|Mehrwertsteuer)[:\s]*(\d+(?:[.,]\d+)?)\s*%"
-        satz_match = re.search(satz_pattern, text, re.IGNORECASE)
-
-        betrag_pattern = r"(?:MWST|MwSt|Mehrwertsteuer)[:\s]*(?:CHF|Fr\.?)?\s*([\d'.,]+)"
-        betrag_match = re.search(betrag_pattern, text, re.IGNORECASE)
-
+        """Extrahiert MWST-Informationen aus Schweizer Rechnungen"""
         result = {}
-        if satz_match:
-            result["satz"] = float(satz_match.group(1).replace(",", "."))
-        if betrag_match:
-            betrag_str = betrag_match.group(1).replace("'", "").replace(",", ".")
-            try:
-                result["betrag"] = Decimal(betrag_str)
-            except Exception:
-                pass
+
+        # MwSt-Satz extrahieren (z.B. "MwSt.  7.7 %" oder "7.7% MwSt")
+        satz_patterns = [
+            r"(?:MWST|MwSt\.?|Mehrwertsteuer)\s*[:\s]*(\d+(?:[.,]\d+)?)\s*%",
+            r"(\d+(?:[.,]\d+)?)\s*%\s*(?:MWST|MwSt\.?)",
+        ]
+        for pattern in satz_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                result["satz"] = float(match.group(1).replace(",", "."))
+                break
+
+        # MwSt-Betrag extrahieren (z.B. "MwSt. Betrag  CHF 139.40")
+        betrag_patterns = [
+            r"(?:MWST|MwSt\.?)\s*(?:Betrag)?[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
+            r"(?:Steuer|Taxe|TVA)\s*[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
+        ]
+        for pattern in betrag_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                betrag_str = match.group(1).replace("'", "").replace("`", "").replace(",", ".")
+                try:
+                    betrag = Decimal(betrag_str)
+                    # Nur plausible Beträge akzeptieren
+                    if betrag > 0 and betrag < 100000:
+                        result["betrag"] = betrag
+                        break
+                except Exception:
+                    continue
 
         return result if result else None
 

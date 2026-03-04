@@ -72,33 +72,53 @@ class ImmotopClient:
         buchungstext: str,
         positionen: list[BelegPosten],
         faelligkeitsdatum: Optional[date] = None,
+        rechnungsnummer: Optional[str] = None,
+        esrreferenznummer: Optional[str] = None,
+        qrcodepayload: Optional[str] = None,
+        kreditor_iban: Optional[str] = None,
     ) -> ImmotopSubmitResponse:
         """Sendet einen Beleg an Immotop2 via SaveDmsImport"""
         if self.mock_mode:
-            return self._mock_submit_beleg(mandant_seqnr, bruttobetrag)
+            return self._mock_submit_beleg(mandant_seqnr, bruttobetrag, positionen)
 
-        # Beleg-Positionen aufbereiten
-        beleg_posten_list = [
-            {
+        # Beleg-Positionen aufbereiten (inkl. MwSt-Felder)
+        beleg_posten_list = []
+        for pos in positionen:
+            posten = {
                 "konto_seqnr": pos.konto_seqnr,
                 "kostenstelle_seqnr": pos.kostenstelle_seqnr,
-                "bruttobetrag": float(pos.bruttobetrag),
-                "buchungstext": pos.buchungstext,
+                "betragbrutto": float(pos.bruttobetrag),
+                "buchungtext": pos.buchungstext,
             }
-            for pos in positionen
-        ]
+            # MwSt-Felder hinzufügen wenn vorhanden
+            if pos.betrag_exkl_mwst is not None:
+                posten["betragexklmwst"] = float(pos.betrag_exkl_mwst)
+            if pos.betrag_mwst is not None:
+                posten["betragmwstvoll"] = float(pos.betrag_mwst)
+            if pos.mwst_satz is not None:
+                posten["mwstsatz"] = pos.mwst_satz
+            if pos.mwst_code_seqnr is not None:
+                posten["mwstcode_seqnr"] = pos.mwst_code_seqnr
+            beleg_posten_list.append(posten)
 
         payload = {
-            "mandant_seqnr": mandant_seqnr,
+            "mand_seqnr": mandant_seqnr,
             "kreditor_seqnr": kreditor_seqnr,
             "belegdatum": belegdatum.isoformat(),
-            "bruttobetrag": float(bruttobetrag),
-            "buchungstext": buchungstext,
             "BelegPostenList": beleg_posten_list,
         }
 
+        # Optionale Felder
         if faelligkeitsdatum:
-            payload["faelligkeitsdatum"] = faelligkeitsdatum.isoformat()
+            payload["zahlungkonditionfaelligperdatum"] = faelligkeitsdatum.isoformat()
+        if rechnungsnummer:
+            payload["rechnungnummer"] = rechnungsnummer
+        if esrreferenznummer:
+            payload["esrreferenznummer"] = esrreferenznummer
+        if qrcodepayload:
+            payload["qrcodepayload"] = qrcodepayload
+        if kreditor_iban:
+            payload["kreditorzahlstellekontodetail"] = kreditor_iban
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -278,16 +298,21 @@ class ImmotopClient:
         return [Kreditor(**item) for item in mock_data]
 
     def _mock_submit_beleg(
-        self, mandant_seqnr: int, bruttobetrag: Decimal
+        self, mandant_seqnr: int, bruttobetrag: Decimal, positionen: list[BelegPosten]
     ) -> ImmotopSubmitResponse:
         """Mock-Response für Beleg-Erstellung"""
         import random
+
+        # MwSt-Info für Mock-Message
+        mwst_info = ""
+        if positionen and positionen[0].mwst_satz:
+            mwst_info = f" (inkl. {positionen[0].mwst_satz}% MwSt)"
 
         return ImmotopSubmitResponse(
             success=True,
             import_seqnr=random.randint(10000, 99999),
             beleg_seqnr=random.randint(10000, 99999),
-            message=f"[MOCK] Beleg über CHF {bruttobetrag} erfolgreich erstellt",
+            message=f"[MOCK] Beleg über CHF {bruttobetrag}{mwst_info} erfolgreich erstellt",
             immotop_url=f"https://demo.immotop2.ch/beleg/{random.randint(10000, 99999)}",
         )
 

@@ -63,8 +63,11 @@ export interface BelegPosten {
   konto_seqnr: number;
   kostenstelle_seqnr: number | null;
   bruttobetrag: number;
+  betrag_exkl_mwst: number | null;
+  betrag_mwst: number | null;
+  mwst_satz: number | null;
+  mwst_code_seqnr: number | null;
   buchungstext: string;
-  mwst_code: string | null;
 }
 
 export interface ImmotopSubmitRequest {
@@ -76,6 +79,11 @@ export interface ImmotopSubmitRequest {
   bruttobetrag: number;
   buchungstext: string;
   positionen: BelegPosten[];
+  // Zusätzliche Felder
+  rechnungsnummer: string | null;
+  esrreferenznummer: string | null;
+  qrcodepayload: string | null;
+  kreditor_iban: string | null;
 }
 
 export interface ImmotopSubmitResponse {

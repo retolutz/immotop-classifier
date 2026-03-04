@@ -129,23 +129,38 @@ export function SubmitForm({
         extrahierteDaten.rechnungsdatum ||
         new Date().toISOString().split("T")[0];
 
+      // MwSt-Daten berechnen
+      const bruttobetrag = invoiceData.bruttobetrag || 0;
+      const mwstSatz = invoiceData.mwst_satz || null;
+      const mwstBetrag = invoiceData.mwst_betrag || null;
+      const nettobetrag = invoiceData.nettobetrag ||
+        (mwstBetrag ? bruttobetrag - mwstBetrag : null);
+
       const request: ImmotopSubmitRequest = {
         invoice_id: invoiceId,
         mandant_seqnr: 1,
         kreditor_seqnr: selectedKreditor.s_seqnr,
         belegdatum,
         faelligkeitsdatum: invoiceData.faelligkeitsdatum,
-        bruttobetrag: invoiceData.bruttobetrag || 0,
+        bruttobetrag,
         buchungstext: buchungstext || "Rechnung",
         positionen: [
           {
             konto_seqnr: selectedKonto.s_seqnr,
             kostenstelle_seqnr: null,
-            bruttobetrag: invoiceData.bruttobetrag || 0,
+            bruttobetrag,
+            betrag_exkl_mwst: nettobetrag,
+            betrag_mwst: mwstBetrag,
+            mwst_satz: mwstSatz,
+            mwst_code_seqnr: null,
             buchungstext: buchungstext || "Rechnung",
-            mwst_code: null,
           },
         ],
+        // Zusätzliche Felder
+        rechnungsnummer: invoiceData.rechnungsnummer,
+        esrreferenznummer: invoiceData.qr_referenz,
+        qrcodepayload: null, // TODO: QR-Code Payload speichern
+        kreditor_iban: invoiceData.iban,
       };
 
       const response = await api.submitToImmotop(request);
@@ -294,9 +309,9 @@ export function SubmitForm({
       </div>
 
       {/* Zusammenfassung */}
-      <div className="p-3 bg-gray-50 rounded-md text-sm">
+      <div className="p-3 bg-gray-50 rounded-md text-sm space-y-1">
         <div className="flex justify-between">
-          <span className="text-gray-500">Betrag:</span>
+          <span className="text-gray-500">Bruttobetrag:</span>
           <span className="font-semibold">
             CHF{" "}
             {invoiceData.bruttobetrag?.toLocaleString("de-CH", {
@@ -304,7 +319,18 @@ export function SubmitForm({
             }) || "0.00"}
           </span>
         </div>
-        <div className="flex justify-between mt-1">
+        {invoiceData.mwst_satz && invoiceData.mwst_betrag && (
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>davon MwSt ({invoiceData.mwst_satz}%):</span>
+            <span>
+              CHF{" "}
+              {invoiceData.mwst_betrag.toLocaleString("de-CH", {
+                minimumFractionDigits: 2,
+              })}
+            </span>
+          </div>
+        )}
+        <div className="flex justify-between">
           <span className="text-gray-500">Datum:</span>
           <span>
             {invoiceData.rechnungsdatum || extrahierteDaten.rechnungsdatum || "Heute"}
@@ -313,6 +339,20 @@ export function SubmitForm({
             )}
           </span>
         </div>
+        {invoiceData.rechnungsnummer && (
+          <div className="flex justify-between">
+            <span className="text-gray-500">Rechnung Nr.:</span>
+            <span className="font-mono text-xs">{invoiceData.rechnungsnummer}</span>
+          </div>
+        )}
+        {invoiceData.qr_referenz && (
+          <div className="flex justify-between">
+            <span className="text-gray-500">QR-Referenz:</span>
+            <span className="font-mono text-xs truncate max-w-[150px]" title={invoiceData.qr_referenz}>
+              {invoiceData.qr_referenz}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Submit Button */}

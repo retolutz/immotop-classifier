@@ -156,6 +156,10 @@ async def submit_to_immotop(request: ImmotopSubmitRequest):
             buchungstext=request.buchungstext,
             positionen=request.positionen,
             faelligkeitsdatum=request.faelligkeitsdatum,
+            rechnungsnummer=request.rechnungsnummer,
+            esrreferenznummer=request.esrreferenznummer,
+            qrcodepayload=request.qrcodepayload,
+            kreditor_iban=request.kreditor_iban,
         )
 
         # Bei Erfolg aus Cache entfernen
