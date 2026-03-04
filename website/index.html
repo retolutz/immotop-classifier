@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KontoKI - Intelligente Rechnungsklassifizierung für Immobilienverwaltungen</title>
+    <meta name="description" content="KI-gestützte automatische Kontierung von Kreditorenrechnungen für Schweizer Immobilienverwaltungen. Spart Zeit, reduziert Fehler.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#10b981',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold text-primary">KontoKI</span>
+                </div>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#features" class="text-gray-600 hover:text-primary transition">Funktionen</a>
+                    <a href="#how-it-works" class="text-gray-600 hover:text-primary transition">So funktioniert's</a>
+                    <a href="#pricing" class="text-gray-600 hover:text-primary transition">Preise</a>
+                    <a href="#contact" class="bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-blue-800 transition font-medium">Demo anfragen</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg pt-32 pb-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="text-white">
+                    <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-6">
+                        Für Schweizer Immobilienverwaltungen
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">
+                        Kreditorenrechnungen automatisch klassifizieren
+                    </h1>
+                    <p class="text-xl text-blue-100 mb-8 leading-relaxed">
+                        Unsere KI erkennt Rechnungsdaten, liest Swiss QR-Codes und schlägt das passende Konto vor. Sie bestätigen nur noch.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#contact" class="bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition text-center">
+                            Kostenlos testen
+                        </a>
+                        <a href="#how-it-works" class="border-2 border-white/50 text-white px-8 py-4 rounded-lg font-semibold hover:bg-white/10 transition text-center">
+                            Mehr erfahren
+                        </a>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 transform rotate-2 hover:rotate-0 transition-transform duration-300">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                            <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                            <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">Kreditor</span>
+                                <span class="font-semibold text-gray-800">Müller Hauswartung GmbH</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">Betrag</span>
+                                <span class="font-bold text-primary text-lg">CHF 1'949.75</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg border-2 border-green-200">
+                                <span class="text-gray-600">KI-Vorschlag</span>
+                                <span class="font-semibold text-green-700">4020 Gartenunterhalt</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm text-green-600 mt-2">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>95% Konfidenz - QR-Code erkannt</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Logos / Trust -->
+    <section class="py-12 bg-gray-50 border-b">
+        <div class="max-w-6xl mx-auto px-6">
+            <p class="text-center text-gray-500 mb-8">Kompatibel mit führenden Schweizer Immobilien-ERPs</p>
+            <div class="flex flex-wrap justify-center items-center gap-12 opacity-60">
+                <span class="text-xl font-semibold text-gray-400">ImmoTop2</span>
+                <span class="text-xl font-semibold text-gray-400">Rimo R5</span>
+                <span class="text-xl font-semibold text-gray-400">Abacus</span>
+                <span class="text-xl font-semibold text-gray-400">Garaio REM</span>
+                <span class="text-xl font-semibold text-gray-400">Quorum</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Warum KontoKI?</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Sparen Sie 15+ Stunden pro Monat bei der Kontierung von Kreditorenrechnungen
+                </p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 card-hover transition-all duration-300">
+                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Swiss QR-Code Erkennung</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Automatische Extraktion aller Zahlungsdaten aus Swiss QR-Bills. IBAN, Betrag, Referenz - 100% genau.
+                    </p>
+                </div>
+                <!-- Feature 2 -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 card-hover transition-all duration-300">
+                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">KI-Klassifizierung</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Trainiert auf Schweizer Immobilien-Kontenplan. Erkennt Gartenunterhalt, Heizkosten, Versicherungen und mehr.
+                    </p>
+                </div>
+                <!-- Feature 3 -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 card-hover transition-all duration-300">
+                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">ERP-Integration</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Direkte Anbindung an ImmoTop2, Rimo R5 und weitere. Belege werden automatisch übertragen.
+                    </p>
+                </div>
+                <!-- Feature 4 -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 card-hover transition-all duration-300">
+                    <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Sekunden statt Minuten</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Von 5 Minuten manueller Arbeit auf 30 Sekunden Bestätigung. Bei 200 Rechnungen sind das 15 Stunden Ersparnis.
+                    </p>
+                </div>
+                <!-- Feature 5 -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 card-hover transition-all duration-300">
+                    <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Swiss Hosting</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Ihre Daten bleiben in der Schweiz. DSGVO-konform, verschlüsselt, sicher.
+                    </p>
+                </div>
+                <!-- Feature 6 -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-100 card-hover transition-all duration-300">
+                    <div class="w-14 h-14 bg-teal-100 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Lernfähig</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Die KI lernt aus Ihren Korrekturen. Je mehr Sie nutzen, desto besser die Vorschläge.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how-it-works" class="py-20 px-6 bg-gray-50">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">So einfach geht's</h2>
+                <p class="text-xl text-gray-600">In drei Schritten zur automatischen Kontierung</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">1</div>
+                    <h3 class="text-xl font-semibold mb-3">Rechnung hochladen</h3>
+                    <p class="text-gray-600">PDF per Drag & Drop oder E-Mail-Weiterleitung. Auch Scans werden erkannt.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">2</div>
+                    <h3 class="text-xl font-semibold mb-3">KI analysiert</h3>
+                    <p class="text-gray-600">Daten werden extrahiert, QR-Code gelesen, passendes Konto vorgeschlagen.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">3</div>
+                    <h3 class="text-xl font-semibold mb-3">Bestätigen & fertig</h3>
+                    <p class="text-gray-600">Vorschlag prüfen, bei Bedarf anpassen, an Ihr ERP senden. Erledigt.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Transparente Preise</h2>
+                <p class="text-xl text-gray-600">Zahlen Sie nur, was Sie nutzen</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Starter -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-2">Starter</h3>
+                    <p class="text-gray-500 mb-6">Für kleine Verwaltungen</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">CHF 29</span>
+                        <span class="text-gray-500">/Monat</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>Bis 100 Rechnungen/Mt</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>1 ERP-Anbindung</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>E-Mail Support</span>
+                        </li>
+                    </ul>
+                    <a href="#contact" class="block text-center border-2 border-primary text-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary hover:text-white transition">
+                        Kostenlos testen
+                    </a>
+                </div>
+                <!-- Professional -->
+                <div class="bg-primary p-8 rounded-2xl text-white transform scale-105 shadow-xl">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-semibold">Professional</h3>
+                        <span class="bg-white/20 text-sm px-3 py-1 rounded-full">Beliebt</span>
+                    </div>
+                    <p class="text-blue-200 mb-6">Für mittlere Verwaltungen</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">CHF 79</span>
+                        <span class="text-blue-200">/Monat</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>Bis 500 Rechnungen/Mt</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>Mehrere ERPs</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>Prioritäts-Support</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>Eigene Konten-Regeln</span>
+                        </li>
+                    </ul>
+                    <a href="#contact" class="block text-center bg-white text-primary px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition">
+                        Demo anfragen
+                    </a>
+                </div>
+                <!-- Enterprise -->
+                <div class="bg-white p-8 rounded-2xl border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-2">Enterprise</h3>
+                    <p class="text-gray-500 mb-6">Für grosse Verwaltungen</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">Individuell</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>Unlimitierte Rechnungen</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>Dedizierter Account Manager</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>On-Premise Option</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span>SLA garantiert</span>
+                        </li>
+                    </ul>
+                    <a href="#contact" class="block text-center border-2 border-primary text-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary hover:text-white transition">
+                        Kontakt aufnehmen
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA / Contact -->
+    <section id="contact" class="py-20 px-6 gradient-bg">
+        <div class="max-w-3xl mx-auto text-center text-white">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Bereit, Zeit zu sparen?</h2>
+            <p class="text-xl text-blue-100 mb-8">
+                Starten Sie mit einer kostenlosen Demo. Keine Kreditkarte erforderlich.
+            </p>
+            <form class="bg-white rounded-2xl p-8 text-left max-w-lg mx-auto">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Name</label>
+                        <input type="text" placeholder="Ihr Name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">E-Mail</label>
+                        <input type="email" placeholder="ihre@email.ch" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Welches ERP nutzen Sie?</label>
+                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-700">
+                            <option>ImmoTop2</option>
+                            <option>Rimo R5</option>
+                            <option>Abacus</option>
+                            <option>Garaio REM</option>
+                            <option>Quorum</option>
+                            <option>Anderes</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Rechnungen pro Monat (ca.)</label>
+                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-700">
+                            <option>Unter 100</option>
+                            <option>100 - 500</option>
+                            <option>500 - 1000</option>
+                            <option>Über 1000</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-blue-800 transition mt-4">
+                        Demo anfragen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-white">KontoKI</span>
+                    </div>
+                    <p class="text-sm">Intelligente Rechnungsklassifizierung für Schweizer Immobilienverwaltungen.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Produkt</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#features" class="hover:text-white transition">Funktionen</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition">Preise</a></li>
+                        <li><a href="#" class="hover:text-white transition">Integrationen</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Unternehmen</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Über uns</a></li>
+                        <li><a href="#contact" class="hover:text-white transition">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Rechtliches</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Datenschutz</a></li>
+                        <li><a href="#" class="hover:text-white transition">AGB</a></li>
+                        <li><a href="#" class="hover:text-white transition">Impressum</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-sm text-center">
+                <p>&copy; 2025 KontoKI. Alle Rechte vorbehalten. Made in Switzerland.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
