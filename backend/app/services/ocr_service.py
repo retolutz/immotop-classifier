@@ -297,9 +297,13 @@ class OCRService:
                 result["satz"] = float(match.group(1).replace(",", "."))
                 break
 
-        # MwSt-Betrag extrahieren (z.B. "MwSt. Betrag  CHF 139.40")
+        # MwSt-Betrag extrahieren - verschiedene Muster
         betrag_patterns = [
-            r"(?:MWST|MwSt\.?)\s*(?:Betrag)?[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
+            # "MwSt. Betrag  CHF 139.40" - Betrag ist required
+            r"(?:MWST|MwSt\.?)\s*Betrag\s*[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
+            # "MwSt CHF 139.40" - CHF direkt nach MwSt
+            r"(?:MWST|MwSt\.?)\s*(?:CHF|Fr\.?)\s*([\d'`.,]+)",
+            # "Steuer/TVA CHF 139.40"
             r"(?:Steuer|Taxe|TVA)\s*[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
         ]
         for pattern in betrag_patterns:
@@ -308,8 +312,8 @@ class OCRService:
                 betrag_str = match.group(1).replace("'", "").replace("`", "").replace(",", ".")
                 try:
                     betrag = Decimal(betrag_str)
-                    # Nur plausible Beträge akzeptieren
-                    if betrag > 0 and betrag < 100000:
+                    # Nur plausible Beträge akzeptieren (nicht der Satz!)
+                    if betrag > 1 and betrag < 100000:
                         result["betrag"] = betrag
                         break
                 except Exception:
