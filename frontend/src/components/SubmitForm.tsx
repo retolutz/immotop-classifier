@@ -239,9 +239,26 @@ export function SubmitForm({
           )}
         </label>
         {extrahierteDaten.kreditor_name && !suggestedKreditor && (
-          <p className="text-xs text-amber-600 mb-1">
-            Erkannt: &quot;{extrahierteDaten.kreditor_name}&quot; - kein passender Kreditor gefunden
-          </p>
+          <div className="mb-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+            <p className="text-sm text-amber-800">
+              <strong>Erkannt:</strong> &quot;{extrahierteDaten.kreditor_name}&quot;
+            </p>
+            <p className="text-xs text-amber-600 mt-1">
+              Kein passender Kreditor im System gefunden.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                const kreditorName = extrahierteDaten.kreditor_name || "";
+                alert(
+                  `Neuen Kreditor erfassen:\n\nName: ${kreditorName}\n\nBitte in Immotop2 unter Stammdaten > Kreditoren erfassen.`
+                );
+              }}
+              className="mt-2 text-xs px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-md transition-colors"
+            >
+              → Neuen Kreditor in Immotop2 erfassen
+            </button>
+          </div>
         )}
         <select
           value={selectedKreditor?.s_seqnr || ""}
