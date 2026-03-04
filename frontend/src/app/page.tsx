@@ -9,6 +9,7 @@ import {
   AccountSelector,
   SubmitForm,
   KontenplanView,
+  PdfViewer,
 } from "@/components";
 import { RefreshCw, AlertCircle } from "lucide-react";
 
@@ -133,10 +134,18 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Hauptbereich */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Linke Spalte: Rechnungsdaten */}
-            <div className="space-y-6">
+          {/* Hauptbereich - 3 Spalten auf grossen Bildschirmen */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Linke Spalte: PDF-Vorschau */}
+            <div className="lg:col-span-1">
+              <PdfViewer
+                invoiceId={uploadResult.id}
+                filename={uploadResult.filename}
+              />
+            </div>
+
+            {/* Mittlere Spalte: Rechnungsdaten */}
+            <div className="lg:col-span-1">
               <InvoicePreview
                 data={uploadResult.invoice_data}
                 filename={uploadResult.filename}
@@ -144,7 +153,7 @@ export default function Home() {
             </div>
 
             {/* Rechte Spalte: Kontenzuordnung & Submit */}
-            <div className="space-y-6">
+            <div className="lg:col-span-1 space-y-6">
               <AccountSelector
                 classification={uploadResult.classification}
                 konten={konten}

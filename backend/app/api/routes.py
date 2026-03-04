@@ -3,8 +3,9 @@ API Routes für den Invoice Classifier
 """
 
 import uuid
+import base64
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from app.models import (
     InvoiceUploadResponse,
@@ -17,6 +18,7 @@ from app.models import (
 from app.services.immotop_client import immotop_client
 from app.services.ocr_service import ocr_service
 from app.services.llm_classifier import llm_classifier
+from app.services.qr_service import qr_service
 
 router = APIRouter()
 
@@ -27,7 +29,11 @@ invoice_cache: dict[str, dict] = {}
 @router.get("/health")
 async def health_check():
     """Health Check Endpoint"""
-    return {"status": "healthy", "service": "immotop-invoice-classifier"}
+    return {
+        "status": "healthy",
+        "service": "immotop-invoice-classifier",
+        "qr_enabled": qr_service.is_available(),
+    }
 
 
 @router.get("/konten", response_model=list[Konto])
@@ -71,8 +77,8 @@ async def upload_invoice(file: UploadFile = File(...)):
         # Datei lesen
         file_bytes = await file.read()
 
-        # OCR durchführen
-        invoice_data = await ocr_service.extract_from_bytes(file_bytes, file.filename)
+        # OCR durchführen (inkl. QR-Code Extraktion)
+        invoice_data, qr_data = await ocr_service.extract_from_bytes(file_bytes, file.filename)
 
         # Konten laden für Klassifikation
         konten = await immotop_client.get_konten()
@@ -87,14 +93,19 @@ async def upload_invoice(file: UploadFile = File(...)):
             "invoice_data": invoice_data,
             "classification": classification,
             "file_bytes": file_bytes,
+            "qr_data": qr_data,
+            "has_qr": qr_data is not None,
         }
 
-        return InvoiceUploadResponse(
+        # Response mit QR-Info erweitern
+        response = InvoiceUploadResponse(
             id=invoice_id,
             filename=file.filename,
             invoice_data=invoice_data,
             classification=classification,
         )
+
+        return response
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Verarbeitungsfehler: {str(e)}")
@@ -156,3 +167,77 @@ async def delete_invoice(invoice_id: str):
 
     del invoice_cache[invoice_id]
     return {"message": "Rechnung gelöscht", "id": invoice_id}
+
+
+@router.get("/invoice/{invoice_id}/preview")
+async def get_invoice_preview(invoice_id: str):
+    """
+    Gibt die PDF/Bild-Datei als Base64 zurück für die Vorschau im Browser.
+    """
+    if invoice_id not in invoice_cache:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+
+    cached = invoice_cache[invoice_id]
+    file_bytes = cached.get("file_bytes")
+    filename = cached.get("filename", "document")
+
+    if not file_bytes:
+        raise HTTPException(status_code=404, detail="Datei nicht im Cache")
+
+    # MIME-Type bestimmen
+    ext = filename.lower().split(".")[-1] if "." in filename else "pdf"
+    mime_types = {
+        "pdf": "application/pdf",
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "tiff": "image/tiff",
+        "bmp": "image/bmp",
+    }
+    mime_type = mime_types.get(ext, "application/octet-stream")
+
+    # Base64 encodieren
+    base64_data = base64.b64encode(file_bytes).decode("utf-8")
+
+    return {
+        "filename": filename,
+        "mime_type": mime_type,
+        "data": base64_data,
+        "has_qr": cached.get("has_qr", False),
+    }
+
+
+@router.get("/invoice/{invoice_id}/file")
+async def get_invoice_file(invoice_id: str):
+    """
+    Gibt die Original-Datei direkt zurück (für Download oder iframe).
+    """
+    if invoice_id not in invoice_cache:
+        raise HTTPException(status_code=404, detail="Rechnung nicht gefunden")
+
+    cached = invoice_cache[invoice_id]
+    file_bytes = cached.get("file_bytes")
+    filename = cached.get("filename", "document.pdf")
+
+    if not file_bytes:
+        raise HTTPException(status_code=404, detail="Datei nicht im Cache")
+
+    # MIME-Type bestimmen
+    ext = filename.lower().split(".")[-1] if "." in filename else "pdf"
+    mime_types = {
+        "pdf": "application/pdf",
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "tiff": "image/tiff",
+        "bmp": "image/bmp",
+    }
+    mime_type = mime_types.get(ext, "application/octet-stream")
+
+    return Response(
+        content=file_bytes,
+        media_type=mime_type,
+        headers={
+            "Content-Disposition": f'inline; filename="{filename}"',
+        }
+    )

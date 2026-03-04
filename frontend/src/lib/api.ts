@@ -90,6 +90,25 @@ class ApiClient {
       method: "DELETE",
     });
   }
+
+  /**
+   * Holt die PDF-Vorschau als Base64
+   */
+  async getInvoicePreview(invoiceId: string): Promise<{
+    filename: string;
+    mime_type: string;
+    data: string;
+    has_qr: boolean;
+  }> {
+    return this.request(`/invoice/${invoiceId}/preview`);
+  }
+
+  /**
+   * Gibt die URL für die direkte Datei-Anzeige zurück
+   */
+  getInvoiceFileUrl(invoiceId: string): string {
+    return `${API_BASE}/invoice/${invoiceId}/file`;
+  }
 }
 
 export const api = new ApiClient();

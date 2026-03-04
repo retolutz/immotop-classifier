@@ -3,12 +3,13 @@ OCR Service für Schweizer Rechnungen
 
 Unterstützt:
 - PDF (Text-Extraktion via PyPDF2)
+- Swiss QR-Bill (automatische Erkennung und Parsing)
 - Bilder (benötigt lokales Tesseract - auf Azure deaktiviert)
 """
 
 import io
 import re
-from typing import Optional
+from typing import Optional, Tuple
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -16,6 +17,7 @@ from pathlib import Path
 from PyPDF2 import PdfReader
 
 from app.models.invoice import InvoiceData
+from app.services.qr_service import qr_service, SwissQRData
 
 # Optionale Imports für lokale Entwicklung
 try:
@@ -34,19 +36,76 @@ class OCRService:
 
     async def extract_from_bytes(
         self, file_bytes: bytes, filename: str
-    ) -> InvoiceData:
-        """Extrahiert Text und Daten aus einer Datei"""
+    ) -> Tuple[InvoiceData, Optional[SwissQRData]]:
+        """
+        Extrahiert Text und Daten aus einer Datei.
+
+        Returns:
+            Tuple von (InvoiceData, Optional[SwissQRData])
+        """
         extension = Path(filename).suffix.lower()
+        qr_data = None
 
         if extension == ".pdf":
             raw_text = await self._extract_from_pdf(file_bytes)
+            # Versuche QR-Code zu extrahieren
+            qr_data = await qr_service.extract_from_pdf(file_bytes)
         elif extension in [".png", ".jpg", ".jpeg", ".tiff", ".bmp"]:
             raw_text = await self._extract_from_image(file_bytes)
+            # Versuche QR-Code aus Bild zu extrahieren
+            qr_data = await qr_service.extract_from_image(file_bytes)
         else:
             raise ValueError(f"Nicht unterstütztes Format: {extension}")
 
         # Strukturierte Daten extrahieren
-        return self._parse_invoice_text(raw_text)
+        invoice_data = self._parse_invoice_text(raw_text)
+
+        # QR-Daten haben Priorität (100% genau)
+        if qr_data:
+            invoice_data = self._merge_qr_data(invoice_data, qr_data)
+
+        return invoice_data, qr_data
+
+    def _merge_qr_data(self, invoice_data: InvoiceData, qr_data: SwissQRData) -> InvoiceData:
+        """Merged QR-Daten in InvoiceData (QR hat Priorität)"""
+
+        # Betrag aus QR (100% genau)
+        if qr_data.amount:
+            invoice_data.bruttobetrag = qr_data.amount
+
+        # IBAN aus QR
+        if qr_data.iban:
+            invoice_data.iban = qr_data.iban
+
+        # Kreditor aus QR
+        if qr_data.creditor_name:
+            invoice_data.kreditor_name = qr_data.creditor_name
+
+        if qr_data.creditor_street or qr_data.creditor_city:
+            parts = []
+            if qr_data.creditor_street:
+                parts.append(qr_data.creditor_street)
+            if qr_data.creditor_building:
+                parts.append(qr_data.creditor_building)
+            if qr_data.creditor_postcode and qr_data.creditor_city:
+                parts.append(f"{qr_data.creditor_postcode} {qr_data.creditor_city}")
+            invoice_data.kreditor_adresse = ", ".join(parts)
+
+        # Referenz als Rechnungsnummer
+        if qr_data.reference:
+            invoice_data.qr_referenz = qr_data.reference
+            if not invoice_data.rechnungsnummer:
+                invoice_data.rechnungsnummer = qr_data.reference
+
+        # Währung
+        if qr_data.currency:
+            invoice_data.waehrung = qr_data.currency
+
+        # Unstrukturierte Mitteilung als Beschreibung
+        if qr_data.unstructured_message:
+            invoice_data.beschreibung = qr_data.unstructured_message
+
+        return invoice_data
 
     async def _extract_from_pdf(self, pdf_bytes: bytes) -> str:
         """Extrahiert Text aus PDF"""

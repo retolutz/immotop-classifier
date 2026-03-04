@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-03-04T19:33:02.412773",
+  "api_url": "https://immotop-classifier.onrender.com/api",
+  "total_tests": 4,
+  "correct": 3.5,
+  "accuracy_percent": 87.5,
+  "results": [
+    {
+      "filename": "rechnung-qr-code.pdf",
+      "success": true,
+      "classified_konto": "4020",
+      "classified_name": "Gartenunterhalt [Kostenbuch]",
+      "confidence": 0.95,
+      "reason": "Die Rechnung enthält hauptsächlich Gartenarbeiten (12.5 Std. à CHF 120.-) und Entsorgung von Schnittmaterial. Beide Positionen gehören klar zum Gartenunterhalt einer Liegenschaft.",
+      "extracted_amount": "1949.75",
+      "extracted_date": null,
+      "extracted_kreditor": "Robert Schneider AG",
+      "extracted_description": "Gartenarbeiten und Entsorgung Schnittmaterial",
+      "alternatives": [
+        {
+          "konto": "4140",
+          "name": "Kehricht und Entsorgung [Kostenbuch]",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "filename": "ihk-muster.pdf",
+      "success": true,
+      "classified_konto": "4110",
+      "classified_name": "Brennstoffe (Heizöl, Gas)",
+      "confidence": 0.7,
+      "reason": "Die Rechnung enthält 'Briketts Immerzünd' als Brennstoff-Produkt, was eindeutig zu Brennstoffen gehört. Allerdings ist dies eine deutsche Musterrechnung mit gemischten Waren (Bohrmaschine + Briketts).",
+      "extracted_amount": null,
+      "extracted_date": "2020-06-29",
+      "extracted_kreditor": "Experten GmbH",
+      "extracted_description": "Bohrmaschinen und Briketts",
+      "alternatives": [
+        {
+          "konto": "4000",
+          "name": "Unterhalt und Reparaturen",
+          "confidence": 0.5
+        }
+      ]
+    },
+    {
+      "filename": "handwerker-at.pdf",
+      "success": true,
+      "classified_konto": "4000",
+      "classified_name": "Unterhalt und Reparaturen [Kostenbuch]",
+      "confidence": 0.9,
+      "reason": "Elektroinstallation in der Küche (Elektrozuleitung verlegt) ist eine bauliche Reparatur/Unterhaltsarbeit. Die Arbeiten umfassen Installation von PVC Mantelleitung, Rohren und Elektromaterial durch einen Elektro-Techniker.",
+      "extracted_amount": null,
+      "extracted_date": "2024-04-15",
+      "extracted_kreditor": "Elektro Mustermann GmbH",
+      "extracted_description": "Elektrozuleitung für Küche verlegt",
+      "alternatives": [
+        {
+          "konto": "4010",
+          "name": "Hauswartung [Kostenbuch]",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "filename": "handwerker-de.pdf",
+      "success": true,
+      "classified_konto": "4000",
+      "classified_name": "Unterhalt und Reparaturen [Kostenbuch]",
+      "confidence": 0.95,
+      "reason": "Malerarbeiten (Tapezieren, Beschichtung mit Dispersionsfarbe, Abdeckarbeiten) sind klassische Unterhalts- und Reparaturarbeiten an Immobilien",
+      "extracted_amount": null,
+      "extracted_date": "2016-05-15",
+      "extracted_kreditor": "Malermeister Michael Meier",
+      "extracted_description": "Malerarbeiten: Tapezieren, Dispersionsfarbe, Abdeckarbeiten",
+      "alternatives": [
+        {
+          "konto": "4310",
+          "name": "Buchhaltungskosten [Kostenbuch]",
+          "confidence": 0.05
+        }
+      ]
+    }
+  ]
+}
