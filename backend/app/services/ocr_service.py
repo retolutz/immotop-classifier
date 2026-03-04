@@ -203,19 +203,44 @@ class OCRService:
 
     def _extract_date(self, text: str) -> Optional[date]:
         """Extrahiert das Rechnungsdatum"""
-        patterns = [
-            (r"(\d{1,2})\.(\d{1,2})\.(\d{4})", "%d.%m.%Y"),
-            (r"(\d{1,2})\.(\d{1,2})\.(\d{2})\b", "%d.%m.%y"),
-            (r"(\d{4})-(\d{2})-(\d{2})", "%Y-%m-%d"),
+        from datetime import datetime
+
+        # Zuerst nach "Datum:" oder "Rechnungsdatum:" suchen
+        date_context_patterns = [
+            r"(?:Datum|Rechnungsdatum)[:\s]+(\d{1,2})\s*\.\s*(\d{1,2})\s*\.\s*(\d{4})",
+            r"(?:Datum|Rechnungsdatum)[:\s]+(\d{1,2})\s*\.\s*(\d{1,2})\s*\.\s*(\d{2})\b",
         ]
 
-        for pattern, date_format in patterns:
+        for pattern in date_context_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                try:
+                    day, month, year = match.groups()
+                    if len(year) == 2:
+                        year = "20" + year
+                    return datetime(int(year), int(month), int(day)).date()
+                except Exception:
+                    continue
+
+        # Fallback: Allgemeine Datumsmuster (mit optionalen Leerzeichen)
+        patterns = [
+            r"(\d{1,2})\s*\.\s*(\d{1,2})\s*\.\s*(\d{4})",  # 01. 07.2020 oder 01.07.2020
+            r"(\d{1,2})\s*\.\s*(\d{1,2})\s*\.\s*(\d{2})\b",  # 01.07.20
+            r"(\d{4})-(\d{2})-(\d{2})",  # 2020-07-01
+        ]
+
+        for pattern in patterns:
             match = re.search(pattern, text)
             if match:
                 try:
-                    from datetime import datetime
-                    date_str = match.group(0)
-                    return datetime.strptime(date_str, date_format).date()
+                    groups = match.groups()
+                    if "-" in match.group(0):  # ISO format
+                        year, month, day = groups
+                    else:
+                        day, month, year = groups
+                        if len(year) == 2:
+                            year = "20" + year
+                    return datetime(int(year), int(month), int(day)).date()
                 except Exception:
                     continue
 
@@ -240,14 +265,20 @@ class OCRService:
     def _extract_invoice_number(self, text: str) -> Optional[str]:
         """Extrahiert Rechnungsnummer"""
         patterns = [
-            r"(?:Rechnung(?:s)?(?:nummer|nr\.?)?|Invoice(?:\s+No\.?)?|Nr\.?)[:\s#]*([A-Z0-9-]+)",
-            r"(?:Beleg(?:nummer|nr\.?)?)[:\s#]*([A-Z0-9-]+)",
+            r"Rechnung\s+Nr\.?\s*[:\s]*([A-Za-z0-9\-/]+)",  # "Rechnung Nr. 10201409"
+            r"Rechnungs?(?:nummer|nr\.?)\s*[:\s#]*([A-Za-z0-9\-/]+)",
+            r"Invoice\s*(?:No\.?|Number)?\s*[:\s#]*([A-Za-z0-9\-/]+)",
+            r"Beleg(?:nummer|nr\.?)\s*[:\s#]*([A-Za-z0-9\-/]+)",
+            r"Nr\.?\s*[:\s]*(\d{6,})",  # "Nr. 10201409" (mindestens 6 Ziffern)
         ]
 
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
-                return match.group(1)
+                result = match.group(1).strip()
+                # Nur zurückgeben wenn es substantiell ist (nicht nur "Nr")
+                if len(result) >= 3 and result.lower() not in ["nr", "nr."]:
+                    return result
 
         return None
 

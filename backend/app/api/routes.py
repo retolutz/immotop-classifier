@@ -86,6 +86,30 @@ async def upload_invoice(file: UploadFile = File(...)):
         # LLM-Klassifikation
         classification = await llm_classifier.classify(invoice_data, konten)
 
+        # Merge LLM-extrahierte Daten zurück in invoice_data
+        # (LLM ist oft besser bei Datumsextraktion etc.)
+        if classification.extrahierte_daten:
+            ext = classification.extrahierte_daten
+            # Datum übernehmen wenn nicht schon vorhanden
+            if ext.get("rechnungsdatum") and not invoice_data.rechnungsdatum:
+                try:
+                    from datetime import datetime
+                    date_str = ext["rechnungsdatum"]
+                    if isinstance(date_str, str):
+                        invoice_data.rechnungsdatum = datetime.strptime(date_str, "%Y-%m-%d").date()
+                except Exception:
+                    pass
+            # Kreditor-Name falls nicht vorhanden
+            if ext.get("kreditor_name") and not invoice_data.kreditor_name:
+                invoice_data.kreditor_name = ext["kreditor_name"]
+            # Betrag als Fallback
+            if ext.get("bruttobetrag") and not invoice_data.bruttobetrag:
+                from decimal import Decimal
+                invoice_data.bruttobetrag = Decimal(str(ext["bruttobetrag"]))
+            # Leistungsbeschreibung
+            if ext.get("leistungsbeschreibung") and not invoice_data.beschreibung:
+                invoice_data.beschreibung = ext["leistungsbeschreibung"]
+
         # Ergebnis cachen
         invoice_id = str(uuid.uuid4())
         invoice_cache[invoice_id] = {
