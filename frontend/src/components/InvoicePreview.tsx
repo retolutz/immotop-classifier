@@ -40,76 +40,83 @@ export function InvoicePreview({ data, filename }: InvoicePreviewProps) {
         <h3 className="font-semibold text-lg">Rechnungsdaten</h3>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-3">
         {/* Dateiname */}
-        <div className="col-span-2 flex items-center gap-2 p-3 bg-gray-50 rounded-md">
-          <FileText className="w-4 h-4 text-gray-500" />
-          <span className="text-sm font-medium">{filename}</span>
+        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
+          <FileText className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <span className="text-sm font-medium truncate">{filename}</span>
         </div>
 
-        {/* Betrag */}
-        <div className="p-3 bg-blue-50 rounded-md">
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <CreditCard className="w-4 h-4" />
-            <span>Betrag</span>
-          </div>
-          <p className="text-2xl font-bold text-immotop-primary">
-            {formatCurrency(data.bruttobetrag)}
-          </p>
-          {data.mwst_betrag && (
-            <p className="text-sm text-gray-500 mt-1">
-              inkl. {formatCurrency(data.mwst_betrag)} MwSt (
-              {data.mwst_satz || "?"}%)
+        {/* Betrag und Datum - nebeneinander */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Betrag */}
+          <div className="p-3 bg-blue-50 rounded-md">
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+              <CreditCard className="w-4 h-4" />
+              <span>Betrag</span>
+            </div>
+            <p className="text-xl font-bold text-immotop-primary break-all">
+              {formatCurrency(data.bruttobetrag)}
             </p>
-          )}
-        </div>
-
-        {/* Datum */}
-        <div className="p-3 bg-gray-50 rounded-md">
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <Calendar className="w-4 h-4" />
-            <span>Rechnungsdatum</span>
+            {data.mwst_betrag && (
+              <p className="text-xs text-gray-500 mt-1">
+                inkl. {formatCurrency(data.mwst_betrag)} MwSt
+              </p>
+            )}
           </div>
-          <p className="text-lg font-semibold">
-            {formatDate(data.rechnungsdatum)}
-          </p>
-          {data.faelligkeitsdatum && (
-            <p className="text-sm text-gray-500 mt-1">
-              Fällig: {formatDate(data.faelligkeitsdatum)}
+
+          {/* Datum */}
+          <div className="p-3 bg-gray-50 rounded-md">
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+              <Calendar className="w-4 h-4" />
+              <span>Rechnungsdatum</span>
+            </div>
+            <p className="text-lg font-semibold">
+              {formatDate(data.rechnungsdatum)}
             </p>
-          )}
+            {data.faelligkeitsdatum && (
+              <p className="text-xs text-gray-500 mt-1">
+                Fällig: {formatDate(data.faelligkeitsdatum)}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Rechnungsnummer */}
-        {data.rechnungsnummer && (
+        {/* Rechnungsnummer und IBAN */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Rechnungsnummer */}
           <div className="p-3 bg-gray-50 rounded-md">
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
               <Hash className="w-4 h-4" />
-              <span>Rechnungsnummer</span>
+              <span>Rechnungsnr.</span>
             </div>
-            <p className="font-mono">{data.rechnungsnummer}</p>
+            <p className="font-mono text-sm break-all">
+              {data.rechnungsnummer || "-"}
+            </p>
           </div>
-        )}
 
-        {/* IBAN */}
-        {data.iban && (
+          {/* IBAN */}
           <div className="p-3 bg-gray-50 rounded-md">
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
               <Building className="w-4 h-4" />
               <span>IBAN</span>
             </div>
-            <p className="font-mono text-sm">{data.iban}</p>
+            <p className="font-mono text-xs break-all">
+              {data.iban || "-"}
+            </p>
           </div>
-        )}
+        </div>
 
         {/* QR-Referenz */}
         {data.qr_referenz && (
-          <div className="col-span-2 p-3 bg-gray-50 rounded-md">
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+          <div className="p-3 bg-green-50 rounded-md border border-green-200">
+            <div className="flex items-center gap-2 text-sm text-green-700 mb-1">
               <Hash className="w-4 h-4" />
               <span>QR-Referenz</span>
             </div>
-            <p className="font-mono text-sm break-all">{data.qr_referenz}</p>
+            <p className="font-mono text-xs break-all text-green-800">
+              {data.qr_referenz}
+            </p>
           </div>
         )}
       </div>

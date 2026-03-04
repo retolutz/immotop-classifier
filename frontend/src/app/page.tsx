@@ -10,6 +10,7 @@ import {
   SubmitForm,
   KontenplanView,
   PdfViewer,
+  ScanningAnimation,
 } from "@/components";
 import { RefreshCw, AlertCircle } from "lucide-react";
 
@@ -20,6 +21,7 @@ export default function Home() {
   const [uploadResult, setUploadResult] = useState<InvoiceUploadResponse | null>(null);
   const [selectedKonto, setSelectedKonto] = useState<Konto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
 
@@ -45,6 +47,7 @@ export default function Home() {
 
   // Datei-Upload Handler
   const handleFileSelect = async (file: File) => {
+    setCurrentFile(file);
     setIsLoading(true);
     setError(null);
     setUploadResult(null);
@@ -67,6 +70,7 @@ export default function Home() {
       );
     } finally {
       setIsLoading(false);
+      setCurrentFile(null);
     }
   };
 
@@ -79,8 +83,25 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
+      {/* Scanning Animation */}
+      {isLoading && currentFile && (
+        <div className="max-w-2xl mx-auto py-8">
+          <ScanningAnimation file={currentFile} />
+        </div>
+      )}
+
+      {/* Error Display */}
+      {error && !isLoading && (
+        <div className="max-w-2xl mx-auto mb-6">
+          <div className="flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+
       {/* Upload-Bereich */}
-      {!uploadResult && (
+      {!uploadResult && !isLoading && (
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
@@ -109,7 +130,7 @@ export default function Home() {
           </div>
 
           {/* Kontenplan */}
-          {konten.length > 0 && (
+          {konten.length > 0 && !isLoading && (
             <div className="mt-6">
               <KontenplanView konten={konten} />
             </div>
