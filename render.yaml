@@ -1,15 +1,12 @@
 services:
   - type: web
     name: immotop-classifier-api
-    runtime: python
+    runtime: docker
     region: frankfurt
     plan: free
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind=0.0.0.0:$PORT --workers=1 --timeout=120 application:application -k uvicorn.workers.UvicornWorker
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.11"
       - key: IMMOTOP_MOCK_MODE
         value: "true"
       - key: DEBUG
