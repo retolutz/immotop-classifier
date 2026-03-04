@@ -4,8 +4,8 @@ services:
     runtime: docker
     region: frankfurt
     plan: free
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     envVars:
       - key: IMMOTOP_MOCK_MODE
         value: "true"
