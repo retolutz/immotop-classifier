@@ -100,22 +100,45 @@ class OCRService:
         return data
 
     def _extract_amount(self, text: str) -> Optional[Decimal]:
-        """Extrahiert den Gesamtbetrag"""
-        patterns = [
-            r"(?:Total|Betrag|Summe|Rechnungsbetrag|Zu zahlen|Gesamtbetrag)[:\s]*(?:CHF|Fr\.?|Franken)?\s*([\d'.,]+)",
-            r"(?:CHF|Fr\.?)\s*([\d'.,]+)\s*(?:Total|Summe|Rechnungsbetrag)?",
-            r"([\d'.,]+)\s*(?:CHF|Fr\.?|Franken)",
+        """Extrahiert den Gesamtbetrag - sucht spezifisch nach Rechnungstotal"""
+        # Priorität 1: Spezifische Total-Bezeichnungen (Schweizer Rechnungen)
+        priority_patterns = [
+            r"Rechnungstotal[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
+            r"Total\s+(?:CHF|Fr\.?)\s*([\d'`.,]+)",
+            r"Gesamtbetrag[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
+            r"Zu\s+zahlen[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
+            r"Endbetrag[:\s]*(?:CHF|Fr\.?)?\s*([\d'`.,]+)",
         ]
 
-        for pattern in patterns:
+        for pattern in priority_patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 amount_str = match.group(1)
-                amount_str = amount_str.replace("'", "").replace(",", ".")
+                # Schweizer Formate: 1'949.75 oder 1`949.75
+                amount_str = amount_str.replace("'", "").replace("`", "").replace(",", ".")
                 try:
-                    return Decimal(amount_str)
+                    amount = Decimal(amount_str)
+                    if amount > 0:
+                        return amount
                 except Exception:
                     continue
+
+        # Priorität 2: Grösster CHF-Betrag finden (oft der Totalbetrag)
+        all_amounts = []
+        amount_pattern = r"(?:CHF|Fr\.?)\s*([\d'`.,]+)"
+        for match in re.finditer(amount_pattern, text, re.IGNORECASE):
+            amount_str = match.group(1)
+            amount_str = amount_str.replace("'", "").replace("`", "").replace(",", ".")
+            try:
+                amount = Decimal(amount_str)
+                if amount > 0:
+                    all_amounts.append(amount)
+            except Exception:
+                continue
+
+        if all_amounts:
+            # Rückgabe des grössten Betrags (typischerweise der Gesamtbetrag)
+            return max(all_amounts)
 
         return None
 
